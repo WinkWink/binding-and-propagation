@@ -2,8 +2,18 @@
 <html>
 <head>
 	<title>Card Game Binding and Propagation</title>
+	<link rel="stylesheet" type="text/css" href="css/deck.css">
 </head>
 <body>
+	<section id="game_div"></section>
+	<footer></footer>
+<script type="text/javascript" src="flashcard_QA.json"></script>
 <script type="text/javascript" src="main.js"></script>
+<script type="text/javascript">
+	(function(){
+		var myGame = new Game("game_div", {game: "flashcard", data: flashcard_QA});
+		console.log(myGame);
+	})();
+</script>
 </body>
 </html>
