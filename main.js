@@ -22,11 +22,47 @@
 		shuffleBtn.onclick = this.gameDeck.shuffle.bind(this);
 
 		this.info_div.appendChild(shuffleBtn);
-		// 	Discard Pile
-		// 	Rules
 
+		// 	Rules
+		this.rules = {
+			discardRow : [
+			{
+				name: "Got it",
+				droppable: true,
+				maxcards: this.deck_div.children.length,
+				piles: 1
+			}
+			],
+			gameComplete: function (e){
+				if(e.currentTarget.childNodes.length === this.discardRow[0].maxcards){
+					console.log("you win");
+				}
+			}
+		}
+
+		// 	Discard Pile
+		this.buildDiscard = function(){
+			for (var i = this.rules.discardRow.length - 1; i >= 0; i--) {
+				var zone = document.createElement("div");
+				zone.className = "zone row";
+				var discardRule = this.rules.discardRow[i];
+				var c = 0;
+				while (c < discardRule.piles){
+					var discardObj = new DiscardPile();
+					discardObj.name = discardRule.name;
+					discardObj.droppable = discardRule.droppable;
+					discardObj.id = "pile-" + c;
+					var buildObj = discardObj.init();
+					zone.appendChild(buildObj);
+					c++;
+				}
+				this.el.appendChild(zone);
+				
+			}
+		}
 		this.el.appendChild(this.info_div);
 		this.el.appendChild(this.deck_div);
+		this.buildDiscard();
 
 	}
 	
@@ -94,9 +130,23 @@
 				frontValDiv.className = "front_val";
 				backValDiv.className = "back_val";
 				catDiv.className = "cat_val";
-
+				
 				frontValDiv.innerHTML = this.data.q;
 				backValDiv.innerHTML = this.data.a;
+
+				var learnMore = document.createElement("a");
+				learnMore.text = "LearnMore";
+				learnMore.href = this.data.link;
+				learnMore.target = "_blank";
+
+				var infoImage = document.createElement("img");
+				infoImage.src = "images/info.svg";
+				learnMore.appendChild(infoImage);
+				learnMore.addEventListener("click", function(e){
+					e.stopPropagation();
+				});
+				backValDiv.appendChild(learnMore);
+
 				catDiv.innerHTML = this.data.category;
 
 				this.cardFront.appendChild(frontValDiv);
@@ -108,7 +158,8 @@
 				this.cardCont.id = this.id;
 				this.cardCont.appendChild(flipDiv);
 				this.cardCont.onclick = cardClick;
-				this.cardCont.appendChild(flipDiv);
+				this.cardCont.draggable = true;
+				this.cardCont.ondragstart = cardDrag;
 				parentFrag.appendChild(this.cardCont);
 		}
 
@@ -124,13 +175,45 @@
 			}
 	})();
 
-	// 	value
-	// 	suit
-	// 	----
-	// 	flip function
-	
+
+	function cardDrag(e){
+		e.dataTransfer.setData("text/plain",e.currentTarget.id);
+
+	}
 	// discard pile 
-	// 	holders
+	var DiscardPile = function(){
+		this.name = "";
+		this.droppable;
+		this.id = "";
+		this.init = function(){
+			// 	holders
+			var holderContainer = document.createElement("div"),
+			holderLabel = document.createElement("div"),
+			holderTarget = document.createElement("div");
+			holderTarget.ondragover = function(e){
+				e.preventDefault();
+			}
+			holderTarget.ondrop = this.cardDrop;
+
+			holderContainer.className = "holder_container";
+			holderLabel.className = "holder_label";
+			holderTarget.className = "holder_target";
+			holderLabel.innerText = this.name;
+
+			holderContainer.appendChild(holderLabel);
+			holderContainer.appendChild(holderTarget);
+
+			return holderContainer;
+		}
+
+	}
+	DiscardPile.prototype.cardDrop = function(e){
+		var cardID = e.dataTransfer.getData("text/plain");
+		var cardDragging = document.getElementById(cardID);
+		cardDragging.style.top = "0px";
+		e.currentTarget.appendChild(cardDragging);
+	}
+	
 	// 	------
 	// 	accept or reject 
 	window.Game = Game;
