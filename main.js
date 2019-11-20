@@ -6,41 +6,74 @@
 	var Game = function(el, option){
 		this.el = document.getElementById(el);
 		this.option = option;
-		// 	info section
+		// 	Info section
+	
 		this.info_div = document.createElement('div');
 		this.info_div.id = "info_div";
-		// 	deck
-		this.deck_div = document.createElement('div');
+		// 	Deck
+	
+		this.deck_div = document.createElement("div");
 		this.deck_div.id = "deck_div";
-		this.gameDeck = new Deck(this.deck_div, option);
-		this.gameDeck.buildDeck();
-		// 	discard pile
-		// 	rule
+		this.gameDeck = new Deck(option);
+		this.gameDeck.buildDeck.call(this);
+
+		var shuffleBtn = document.createElement('button');
+		shuffleBtn.innerHTML = "Shuffle";
+		shuffleBtn.onclick = this.gameDeck.shuffle.bind(this);
+
+		this.info_div.appendChild(shuffleBtn);
+		// 	Discard Pile
+		// 	Rules
+
 		this.el.appendChild(this.info_div);
 		this.el.appendChild(this.deck_div);
+
 	}
+	
 
 	
 	// deck
-	var Deck = function(deck_div,option){
+	var Deck = function(option){
 		this.deckData = option.data;
 		this.buildDeck = function(){
 			var parentFrag = document.createDocumentFragment();
-			deck_div.innerHTML = "";
-			for (var i = this.deckData.length - 1; i >= 0; i--) {
+			this.deck_div.innerHTML = "";
+			for (var i = this.option.data.length - 1; i >= 0; i--) {
 				var card = new Card();
 				card.id = "card-" + i;
-				card.data = this.deckData[i];
+				card.data = this.option.data[i];
 				card.buildCard(parentFrag);
-
 			}
-			deck_div.appendChild(parentFrag);
+			this.deck_div.appendChild(parentFrag);
+			this.gameDeck.stack.call(this);
+			
 		}
+		
 	}
 	// 	cards
 	// 	-----
-	// 	shuffle function
-	// 	stack function
+	// shuffle
+	Deck.prototype.shuffle = function(){
+		var cardsToShuffle = this.gameDeck.deckData;
+		var m = cardsToShuffle.length, t, i;
+		while(m){
+			i = Math.floor(Math.random() * m--);
+			t = cardsToShuffle[m];
+			cardsToShuffle[m] = cardsToShuffle[i];
+			cardsToShuffle[i] = t;
+		}
+		this.gameDeck.deckData = cardsToShuffle;
+		this.gameDeck.buildDeck.call(this);
+	}
+	// 	stack
+	Deck.prototype.stack = function(){
+		var cards = this.deck_div.children;
+		for (var i = cards.length - 1; i >= 0; i--) {
+			cards[i].style.top = i + "px";
+			cards[i].style.left = i + "px";
+			cards[i].classList.add("stacked_card");
+		}
+	}
 	
 	// cards 
 	var Card = function(){
@@ -74,10 +107,23 @@
 
 				this.cardCont.id = this.id;
 				this.cardCont.appendChild(flipDiv);
+				this.cardCont.onclick = cardClick;
+				this.cardCont.appendChild(flipDiv);
 				parentFrag.appendChild(this.cardCont);
 		}
 
 	}
+	
+	var cardClick = (function(e){
+		var counter = 0;
+		return 	function (e){
+					e.currentTarget.classList.toggle("flip_card");
+					e.currentTarget.classList.toggle("slide_over");
+					e.currentTarget.style.zIndex = counter;
+					counter++;
+			}
+	})();
+
 	// 	value
 	// 	suit
 	// 	----
